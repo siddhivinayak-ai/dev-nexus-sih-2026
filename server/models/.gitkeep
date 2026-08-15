@@ -1,0 +1,3 @@
+# This directory stores ML model weights and configurations.
+# Large model files (.pt, .pth, .onnx, .pkl) are git-ignored.
+# Use Git LFS or download scripts for sharing model artifacts.

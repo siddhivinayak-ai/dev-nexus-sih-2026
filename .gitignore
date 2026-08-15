@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
+.coverage
+htmlcov/
+
+# Uploads & temp
+uploads/
+temp/
+*.tmp
+
+# Model artifacts (large files)
+*.pt
+*.pth
+*.onnx
+*.pkl
+!server/models/.gitkeep
+
+# Docs (keep in repo root, not in git ignore)
+# requirementskills.docx
+# contractor.docx
