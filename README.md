@@ -94,8 +94,8 @@ SIH2026/
 | 2 | **Prathamesh** | ML Engineer | DBSCAN clustering, PyTorch neural scorer, bid anomaly detection | `prathamesh-feature` |
 | 3 | **Mansi** | ML Engineer + Data | Statistical pattern analysis, entity-relationship graphs, training data pipeline | `mansi-feature` |
 | 4 | **Lakshey** | Frontend Lead + Presentation | React dashboard, data visualizations, UI/UX, pitch deck | `lakshey-feature` |
-| 5 | **Member 5** | Backend + DevOps | FastAPI endpoints, database, deployment, CI/CD | `member5-feature` |
-| 6 | **Member 6** | Research + Testing | Domain research, test data generation, QA, documentation | `member6-feature` |
+| 5 | **Joel** | Backend + DevOps | FastAPI endpoints, database, deployment, CI/CD | `member5-feature` |
+| 6 | **Kunal** | Research + Testing | Domain research, test data generation, QA, documentation | `member6-feature` |
 
 > **📍 Where is Siddhivinayak?**
 >
