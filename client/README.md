@@ -1,80 +1,65 @@
-# 🛡️ BidShield AI — Client Dashboard (React + Vite + Tailwind CSS)
+# 🛡️ DevNexus — Procurement Intelligence & Cartel Detection Platform
 
-### Smart India Hackathon 2026 | Team Dev Nexus
-**Branch:** `siddhivinayak-frontend-version0.1`  
-**Lead & Author:** Siddhivinayak Waghmode
+**Branch:** `devnexus-light-ui-v0.2`  
+**Author:** Siddhivinayak Waghmode
 
 ---
 
 ## 📌 Overview
 
-The **BidShield AI Frontend** is a dark-themed, modern, high-density procurement fraud supervision dashboard built for government auditors and the Competition Commission of India (CCI). It interfaces directly with our dual backend engines:
-
-1. **Engine 1: Statistical Anomaly Detection (DBSCAN + PyTorch)** — Visualizing bid timing offsets, pricing distributions, and high-density Bill of Quantities (BOQ) margin schedules.
-2. **Engine 2: Layout-Aware RAG (Document Intelligence)** — Split-screen PDF text inspection, font fingerprint matching, watermark scanning, and side-by-side text diffing.
+**DevNexus** is an enterprise-grade, light-themed SaaS platform for procurement security and cartel detection. Built for government procurement officers and the Competition Commission Audit Bureau, it provides real-time fraud interception before public tender payouts are authorized.
 
 ---
 
-## 🎨 Key Interface Features & Design Concepts
+## 🎨 Design Architecture (Light Theme SaaS)
 
-### 1. 🌐 Landing Homescreen & Mock Auditor Verification
-- **Sleek Hero Section**: Charcoal/slate background with radial dotted pattern grid, glowing blue accents, and core feature highlight cards.
-- **Mock Login & Registration Modals**: Pre-filled credentials (`auditor@gem.gov.in` / `admin123`) for instant authentication and demonstration.
-
-### 2. 📊 Executive Audit Dashboard
-- **Aggregate KPI Stats**: Real-time counter cards for scanned tenders, detected cartels, estimated public savings (₹ Cr), and pending auditor alerts.
-- **Interactive Recharts**: Area charts for monthly cartel detection trends and savings, plus bar charts for tender distribution.
-- **Searchable Tenders Portal**: Filter tenders by risk status (`FLAGGED_CCI`, `UNDER_INVESTIGATION`, `CLEAN`).
-
-### 3. 📊 High-Density BOQ Tables with Confidence Scores (Engine 1)
-- **Excel-like Item Grid**: Line-by-line price breakdowns across bidders (TechNova, Digital Infra, CompuWorld).
-- **Color-Coded Confidence Badges**: Green for independent pricing (>90%), Yellow/Red for cover-bidding ratios (<20%).
-- **Inline Hover Popovers**: Hover over any table cell to trigger a source snippet popover detailing exact pricing formula variances.
-
-### 4. 🗺️ Split-Screen PDF & Layout RAG Viewer (Engine 2)
-- **Left Column**: Interactive proposal PDF text reader with line-by-line highlight markers for matching clauses and watermarks.
-- **Right Column**: Pairwise RAG similarity scores (text similarity, layout match, font fingerprints, boilerplate overlaps).
-- **Click-to-Highlight**: Clicking any flagged section card in the similarity panel instantly scrolls to and highlights that paragraph in the PDF text reader.
-
-### 5. 🗂️ Version Control & Change Diffing Visualizer
-- **Side-by-Side Red/Green Diffing**: Visual comparison of proposal texts or tender revisions.
-- **Color Coding**: Deletions in red strikethrough (`diff-deletion`) and additions in green highlight (`diff-addition`).
-
-### 6. 🕸️ Collusive Entity Network Topology Graph
-- **Canvas-Based Node-Link Graph**: Interactive network map visualizing shared directors (e.g. Rajesh Waghmode), submission IP addresses (192.168.4.112), PDF author metadata (`siddhivinayak.w`), and leaked subcontract payouts.
-
-### 7. 💬 Contextual Compliance Copilot Chat Drawer
-- **Persistent Side Drawer**: Floating chat assistant capable of answering tender queries ("Compare terms", "Check IP address match").
-- **Page Citation Badges**: Clickable citation badges linked to page numbers that navigate straight to the relevant PDF section.
-
-### 8. 📄 CCI Compliance Report & Evidence Package
-- **Print-Ready Layout**: Printable report document with official CCI headers, mathematical risk indices, itemized bid breakdowns, and audit directive banners.
-- **One-Click Print/Export**: Triggers native browser print dialog (`window.print()`).
+- **Color Palette**: Off-white SaaS canvas (`#f4f5f8`), crisp white card containers (`#ffffff`), slate typography (`#0f172a`), Sky Blue accents (`#3b82f6`), and warning indicators (`#f97316` / `#ef4444`).
+- **Top Navigation Bar**: Top pill navigation bar (`Overview`, `Scanned Tenders`, `Engine 1 BOQ`, `Engine 2 RAG`, `CCI Reports`).
+- **Multi-Layer Layout**:
+  - **Left Hero Card**: Sky Blue gradient banner with 3D security motifs and savings metrics.
+  - **Metric Cards with Radial Arc Gauges**: DBSCAN anomaly index (82%) and layout similarity match (71%) with SVG semi-circle progress gauges.
+  - **Category Risk Spread Chart**: Interactive department risk breakdown chart.
+  - **Bottom Performance Row**: Velocity metrics and workforce output trackers.
 
 ---
 
-## 🔧 Tech Stack
+## 🚀 Key Features
 
-- **Framework**: React 18 (Vite)
-- **Styling**: Tailwind CSS v4 + PostCSS (@tailwindcss/postcss)
-- **Icons**: Lucide React (`lucide-react`)
-- **Charts & Graphs**: Recharts (`recharts`)
-- **Animations**: Framer Motion (`framer-motion`) + Glassmorphism CSS
-- **API Client**: Axios/Fetch with automatic mock fallback (`/src/services/api.js`)
+1. **Homescreen & Auditor Authentication**:
+   - Clean light SaaS hero section with primary/secondary actions.
+   - Light authentication modal with pre-filled auditor credentials (`auditor@devnexus.io` / `admin123`).
+
+2. **Tender Verification Portal**:
+   - Filterable table for risk statuses (`FLAGGED_CCI`, `UNDER_INVESTIGATION`, `CLEAN`).
+
+3. **High-Density BOQ Table (Engine 1)**:
+   - Excel-like line-by-line price breakdown grid across bidders.
+   - Hover popovers displaying exact pricing formula breakdown snippets.
+
+4. **Split-Screen PDF Viewer & Layout RAG (Engine 2)**:
+   - Left side proposal reader with highlighted matching clauses (`[HIGHLIGHT-WARRANTY]`).
+   - Right side pairwise RAG similarity metrics cards with click-to-highlight navigation.
+
+5. **Side-by-Side Version Diff Visualizer**:
+   - Red strikethrough (`diff-deletion`) and green highlight (`diff-addition`) for text comparisons.
+
+6. **Collusive Entity Topology Graph**:
+   - Interactive Canvas node-link graph mapping shared directors, gateway IPs, PDF metadata, and kickback leaks.
+
+7. **DevNexus Compliance Copilot**:
+   - Contextual AI chat drawer with page citation badges.
+
+8. **CCI Compliance Audit Package**:
+   - Formal audit document with one-click PDF printing (`window.print()`).
 
 ---
 
-## 🚀 Running Locally
+## 🔧 Setup & Development
 
 ```bash
-# Navigate to client directory
 cd client
-
-# Install dependencies (if not already done)
 npm install
-
-# Start Vite local development server
 npm run dev
 ```
 
-The application will be accessible at: `http://localhost:5173`
+Dev Server: `http://localhost:5173`

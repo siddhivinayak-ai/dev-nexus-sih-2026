@@ -7,12 +7,11 @@ import ReportGenerator from './pages/ReportGenerator';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
-  const [activePage, setActivePage] = useState('landing'); // 'landing', 'dashboard', 'tender_details', 'report_generator'
+  const [activePage, setActivePage] = useState('landing');
   const [selectedTenderId, setSelectedTenderId] = useState(null);
 
-  // Check if user is already logged in on reload
   useEffect(() => {
-    const savedUser = localStorage.getItem('bidshield_user');
+    const savedUser = localStorage.getItem('devnexus_user');
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
       setCurrentUser(parsedUser);
@@ -26,7 +25,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('bidshield_user');
+    localStorage.removeItem('devnexus_user');
     setCurrentUser(null);
     setActivePage('landing');
     setSelectedTenderId(null);
@@ -50,7 +49,6 @@ export default function App() {
     setActivePage('tender_details');
   };
 
-  // Render active page component
   switch (activePage) {
     case 'landing':
       return <Landing onLoginSuccess={handleLoginSuccess} />;

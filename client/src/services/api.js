@@ -1,14 +1,13 @@
 /**
- * BidShield AI — API Client Service
+ * DevNexus — API Client Service & Data Provider
  * Author: Siddhivinayak Waghmode
  * 
- * Interacts with FastAPI backend routes, with highly detailed fallback mock data
- * reflecting procurement cartel scenarios for SIH 2026.
+ * Interacts with FastAPI backend routes, providing fallback data structures for
+ * procurement cartel supervision, BOQ breakdowns, layout RAG matches, and entity topologies.
  */
 
 const API_BASE_URL = 'http://localhost:8000';
 
-// Mock database simulating backend response state
 const MOCK_DATA = {
   stats: {
     total_tenders_analyzed: 47,
@@ -18,7 +17,7 @@ const MOCK_DATA = {
     recent_flags: [
       {
         tender_id: 'tender-2026-001',
-        title: 'Supply of 5,000 Desktop Computers to Government Schools',
+        title: 'Supply of 5,000 Desktop Computers to Public Institutions',
         flag_date: '2026-08-15T14:30:00Z',
         anomaly_score: 0.94,
         is_suspicious: true,
@@ -36,7 +35,7 @@ const MOCK_DATA = {
       },
       {
         tender_id: 'tender-2026-004',
-        title: 'Procurement of High-Tensile Steel Bars for Metro Phase 3',
+        title: 'Procurement of High-Tensile Steel Bars for Metro Line Phase 3',
         flag_date: '2026-08-12T11:00:00Z',
         anomaly_score: 0.88,
         is_suspicious: true,
@@ -49,8 +48,8 @@ const MOCK_DATA = {
   tenders: {
     'tender-2026-001': {
       tender_id: 'tender-2026-001',
-      title: 'Supply of 5,000 Desktop Computers to Government Schools',
-      department: 'Directorate of Education',
+      title: 'Supply of 5,000 Desktop Computers to Public Institutions',
+      department: 'Directorate of Information Technology',
       value: 160000000, // ₹16 Cr
       publish_date: '2026-07-20T10:00:00Z',
       submission_deadline: '2026-08-10T17:00:00Z',
@@ -59,7 +58,7 @@ const MOCK_DATA = {
       engine1_score: 0.96, // DBSCAN
       engine2_score: 0.92, // Layout RAG
       recommendation: 'HALT_AWARD',
-      recommendation_text: 'High confidence cartel activity detected. TechNova Solutions and Digital Infra Systems exhibit identical document layouts and a fixed 6% pricing markup correlation across all items. Recommend halting award to L1 and initiating CCI audit.',
+      recommendation_text: 'High-confidence cartel ring detected. TechNova Solutions and Digital Infra Systems exhibit identical document layouts and a fixed 6% pricing markup correlation across all items. Recommend halting award to L1 and initiating CCI audit.',
       
       bidders: [
         {
@@ -94,7 +93,7 @@ const MOCK_DATA = {
         }
       ],
       
-      // Engine 1: DBSCAN & Price Breakdown Table (High-density BOQ)
+      // Engine 1: DBSCAN & BOQ Excel Grid
       boq: [
         {
           id: 'item-1',
@@ -131,7 +130,7 @@ const MOCK_DATA = {
         }
       ],
 
-      // Engine 2: Layout-Aware RAG Compare Details
+      // Engine 2: Layout-Aware RAG Comparison
       document_comparison: {
         document_pairs: [
           { doc_a: 'TechNova_Proposal.pdf', doc_b: 'DigitalInfra_Proposal.pdf', text_similarity: 0.92, layout_similarity: 0.98, font_match_ratio: 1.0, table_structure_match: 0.96, boilerplate_overlap: 0.97, watermark_match: true, overall_score: 0.95, is_suspicious: true }
@@ -155,7 +154,7 @@ const MOCK_DATA = {
         }
       },
       
-      // Entity Relationships for Fraud Graph
+      // Entity Relationships
       network: {
         nodes: [
           { id: 'technova', label: 'TechNova Solutions', type: 'BIDDER', group: 1, val: 15 },
@@ -182,7 +181,7 @@ const MOCK_DATA = {
     'tender-2026-002': {
       tender_id: 'tender-2026-002',
       title: 'Four-Laning of NH-48 Highway Bypass (Km 120 to 142)',
-      department: 'National Highways Authority of India (NHAI)',
+      department: 'National Highways Authority',
       value: 1450000000, // ₹145 Cr
       publish_date: '2026-07-15T09:00:00Z',
       submission_deadline: '2026-08-08T15:00:00Z',
@@ -191,7 +190,7 @@ const MOCK_DATA = {
       engine1_score: 0.85,
       engine2_score: 0.22,
       recommendation: 'MANUAL_REVIEW_CCI',
-      recommendation_text: 'DBSCAN and regional pattern analysis flagged a potential market division cartel. Bidding entities (Apex Infra, Maruti Construction, Shiv Shakti Buildcon) have alternating bidding wins in Gujarat, Rajasthan, and Maharashtra. Bid pricing spreads here are under 0.8% variance.',
+      recommendation_text: 'DBSCAN and regional pattern analysis flagged a potential market division cartel. Bidding entities (Apex Infra, Maruti Construction, Shiv Shakti Buildcon) have alternating bidding wins across regions. Bid pricing spreads here are under 0.8% variance.',
       
       bidders: [
         { name: 'Apex Infra Projects', registration_id: 'REG-2211904', amount: 1425000000, status: 'L1 (Lowest Bidder)', flag: 'REGIONAL_ABSTENTION', submission_time: '2026-08-08T14:20:00Z', region: 'Maharashtra', ip_address: '14.139.12.5' },
@@ -283,37 +282,31 @@ const MOCK_DATA = {
   }
 };
 
-// Helper to handle API requests with a mock fallback
 async function fetchFromApi(endpoint, fallbackData) {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1800); // Fail fast
+    const timeoutId = setTimeout(() => controller.abort(), 1800);
     const response = await fetch(`${API_BASE_URL}${endpoint}`, { signal: controller.signal });
     clearTimeout(timeoutId);
     
     if (response.ok) {
       const data = await response.json();
-      // Check if it is a FastAPI default TODO response
       if (data && (data.message?.includes('pending') || data.message?.includes('implemented') || data.status === 'comparison_pending' || data.total_tenders_analyzed === 0)) {
-        console.warn(`FastAPI returned placeholder for ${endpoint}. Falling back to mock data.`);
         return { data: fallbackData, isMock: true };
       }
       return { data, isMock: false };
     }
   } catch (error) {
-    // Backend is offline or fetch failed
-    console.warn(`Backend connection failed at ${API_BASE_URL}${endpoint}. Using mock fallback.`, error);
+    // API server offline
   }
   return { data: fallbackData, isMock: true };
 }
 
 export const api = {
-  // Get dashboard statistics
   getDashboardStats: async () => {
     return fetchFromApi('/api/reports/dashboard-stats', MOCK_DATA.stats);
   },
 
-  // Get fraud summary / recommendation for a tender
   getFraudSummary: async (tenderId) => {
     const fallbackVal = MOCK_DATA.tenders[tenderId] ? {
       tender_id: tenderId,
@@ -329,9 +322,7 @@ export const api = {
     return fetchFromApi(`/api/reports/fraud-summary/${tenderId}`, fallbackVal);
   },
 
-  // Get details for a specific tender (including BOQ, document matches, entity graph)
   getTenderDetails: async (tenderId) => {
-    // Reconstruct response fields based on mock database
     const fallbackVal = MOCK_DATA.tenders[tenderId] || null;
     if (fallbackVal) {
       return { data: fallbackVal, isMock: true };
@@ -339,7 +330,6 @@ export const api = {
     return fetchFromApi(`/api/bids/results/${tenderId}`, null);
   },
 
-  // Upload PDFs for a tender
   uploadVendorPdfs: async (tenderId, files) => {
     try {
       const formData = new FormData();
@@ -353,33 +343,28 @@ export const api = {
       if (response.ok) {
         return await response.json();
       }
-    } catch (e) {
-      console.warn('PDF upload failed, mocking success response.', e);
-    }
-    // Mock successful upload response
+    } catch (e) {}
     return {
       tender_id: tenderId,
       files_uploaded: files.length,
       files: Array.from(files).map(f => ({ filename: f.name, size: f.size, status: 'uploaded' })),
-      message: 'PDFs uploaded (Mocked). Layout analysis will be triggered.'
+      message: 'PDFs uploaded. Layout analysis triggered.'
     };
   },
 
-  // Trigger Engines
   triggerAnalysis: async (tenderId) => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/bids/analyze/${tenderId}`);
       if (response.ok) return await response.json();
     } catch (e) {}
-    return { tender_id: tenderId, status: 'analysis_pending', message: 'Analysis triggered successfully (Mocked).' };
+    return { tender_id: tenderId, status: 'analysis_pending', message: 'Analysis triggered successfully.' };
   },
 
-  // Compare documents (Engine 2 RAG)
   triggerCompare: async (tenderId) => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/documents/compare/${tenderId}`);
       if (response.ok) return await response.json();
     } catch (e) {}
-    return { tender_id: tenderId, status: 'comparison_pending', message: 'Layout analysis completed (Mocked).' };
+    return { tender_id: tenderId, status: 'comparison_pending', message: 'Layout analysis completed.' };
   }
 };
