@@ -167,17 +167,18 @@ SIH2026/
 
 ## 👥 Team Dev Nexus — Roles & Implementation Status
 
-> **Current Project Progress:** ~78% Overall System Readiness  
-> *Production-ready document intelligence, behavioral anomaly detection pipelines, interactive dashboard UI, and automated test harness.*
+> **Current Project Progress:** ~42% Complete  
+> *Engine 2 (Layout-Aware RAG) and Frontend Dashboard prototypes implemented. Behavioral ML, Graph Analytics, Database persistence, and Production DevOps scheduled in upcoming sprints.*
 
 | # | Member | Primary Role | Feature Deliverables & Implementation Breakdown | Feature Branch |
 |---|---|---|---|---|
-| 1 | **Prathamesh** | ML Engineer (Behavioral Analytics) | • **DBSCAN Density-Based Bid Clustering:** `70%`<br>• **Cover Bid Margin / Price-Gap Analytics:** `68%`<br>• **PyTorch Collusion Scorer Model:** `62%`<br>• **Bid Timestamp Anomaly Heuristics:** `60%` | `prathamesh-feature` |
-| 2 | **Mansi** | Data & Graph Analytics | • **Synthetic Tender & Vendor Dataset Generation:** `72%`<br>• **Cross-Tender Rotational Winning Detector:** `62%`<br>• **Entity Relationship & Shared Entity Graphing:** `58%`<br>• **Regional Market Splitting Heuristics:** `50%` | `mansi-feature` |
-| 3 | **Lakshey** | Frontend & UI/UX Specialist | • **Executive Summary & Dashboard KPIs:** `78%`<br>• **Tender Deep-Dive & Bid Heatmaps:** `72%`<br>• **Side-by-Side PDF Diff & Match Highlighter:** `68%`<br>• **Audit Report Viewer & Pitch Deck Design:** `64%` | `lakshey-feature` |
-| 4 | **Siddhivinayak Waghmode** | Full-Stack Lead & Document AI Lead | • **Project Architecture & FastAPI Scaffolding:** `92%`<br>• **Engine 2 Layout & Font Parser (`PyMuPDF`):** `90%`<br>• **Embedding & Semantic Vector Pipeline:** `88%`<br>• **Pairwise Similarity & Risk Fusion Matrix:** `86%`<br>• **End-to-End Automated Test Harness:** `85%`<br>• **Frontend API Integration & State Wiring:** `85%` | `siddhivinayak-feature` |
-| 5 | **Joel** | Backend & Systems Engineer | • **REST API Endpoint Routing & Validation:** `75%`<br>• **Database Schema & ORM Persistence (SQLAlchemy):** `62%`<br>• **Auth & Role-Based Access Control:** `55%`<br>• **Docker Containerization & CI/CD Pipeline:** `48%` | `joel-feature` |
-| 6 | **Kunal** | QA, Domain & Legal Research | • **CCI Legal Guidelines & Anti-Cartel Benchmarks:** `75%`<br>• **Synthetic Cartel Scenario Formulations:** `70%`<br>• **Edge-Case Validation & Manual Audit Checks:** `60%`<br>• **System Documentation & Compliance Whitepaper:** `55%` | `kunal-feature` |
+| 1 | **Prathamesh** | ML Engineer (Behavioral Analytics) | • **DBSCAN Density-Based Bid Clustering:** `0%` *(Pending)*<br>• **Cover Bid Margin / Price-Gap Analytics:** `0%` *(Pending)*<br>• **PyTorch Collusion Scorer Model:** `0%` *(Pending)*<br>• **Bid Timestamp Anomaly Heuristics:** `0%` *(Pending)* | `prathamesh-feature` |
+| 2 | **Mansi** | Data & Graph Analytics | • **Synthetic Tender & Vendor Dataset Generation:** `0%` *(Pending)*<br>• **Cross-Tender Rotational Winning Detector:** `0%` *(Pending)*<br>• **Entity Relationship & Shared Entity Graphing:** `0%` *(Pending)*<br>• **Regional Market Splitting Heuristics:** `0%` *(Pending)* | `mansi-feature` |
+| 3 | **Lakshey** | Frontend & UI/UX Specialist | • **Executive Summary & Dashboard KPIs:** `75%`<br>• **Tender Deep-Dive & Bid Heatmaps:** `68%`<br>• **Side-by-Side PDF Diff & Match Highlighter:** `65%`<br>• **Audit Report Viewer & Pitch Deck Design:** `50%` | `lakshey-feature` |
+| 4 | **Siddhivinayak Waghmode** | Full-Stack Lead & Document AI Lead | • **Project Architecture & FastAPI Scaffolding:** `92%`<br>• **Engine 2 Layout & Font Parser (`PyMuPDF`):** `90%`<br>• **Embedding & Semantic Vector Pipeline:** `88%`<br>• **Pairwise Similarity & Risk Fusion Matrix:** `86%`<br>• **End-to-End Automated Test Harness:** `85%`<br>• **Frontend API Integration & State Wiring:** `80%` | `siddhivinayak-feature` |
+| 5 | **Joel** | Backend & Systems Engineer | • **REST API Endpoint Routing & Validation:** `0%` *(Pending)*<br>• **Database Schema & ORM Persistence (SQLAlchemy):** `0%` *(Pending)*<br>• **Auth & Role-Based Access Control:** `0%` *(Pending)*<br>• **Docker Containerization & CI/CD Pipeline:** `0%` *(Pending)* | `joel-feature` |
+| 6 | **Kunal** | QA, Domain & Legal Research | • **CCI Legal Guidelines & Anti-Cartel Benchmarks:** `0%` *(Pending)*<br>• **Synthetic Cartel Scenario Formulations:** `0%` *(Pending)*<br>• **Edge-Case Validation & Manual Audit Checks:** `0%` *(Pending)*<br>• **System Documentation & Compliance Whitepaper:** `0%` *(Pending)* | `kunal-feature` |
+
 
 
 ---
