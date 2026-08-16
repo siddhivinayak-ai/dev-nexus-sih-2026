@@ -3,9 +3,11 @@ import { api } from '../services/api';
 import { 
   Shield, AlertTriangle, TrendingUp, Search, Briefcase, Eye, Calendar, 
   Sparkles, AlertCircle, FileText, CheckCircle2, Bell, User, ArrowUpRight, 
-  Layers, ChevronRight, Activity, Filter
+  Layers, ChevronRight, Activity, Filter, Upload, Plus
 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, AreaChart, Area } from 'recharts';
+import IsometricHeroGraphic from '../components/IsometricHeroGraphic';
+import PdfUploadModal from '../components/PdfUploadModal';
 
 const formatRupee = (value) => {
   if (value >= 10000000) {
@@ -31,6 +33,9 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [activeTab, setActiveTab] = useState('Overview');
   const [allTenders, setAllTenders] = useState([]);
+  
+  // Modal state
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   useEffect(() => {
     async function loadStats() {
@@ -91,6 +96,18 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
     loadStats();
   }, []);
 
+  const handleUploadComplete = (newTender) => {
+    setAllTenders(prev => [newTender, ...prev]);
+    if (stats) {
+      setStats(prev => ({
+        ...prev,
+        total_tenders_analyzed: prev.total_tenders_analyzed + 1,
+        fraud_detected: prev.fraud_detected + 1
+      }));
+    }
+    onSelectTender(newTender.tender_id);
+  };
+
   const filteredTenders = allTenders.filter(tender => {
     const matchesSearch = tender.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           tender.tender_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -103,9 +120,8 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
   return (
     <div className="min-h-screen bg-[#f4f5f8] text-slate-900 flex flex-col font-sans pb-16">
       
-      {/* TOP NAVIGATION BAR (Matching Structra Reference UI) */}
+      {/* TOP NAVIGATION BAR */}
       <header className="bg-white border-b border-slate-200/80 px-8 py-4 flex items-center justify-between sticky top-0 z-30 shadow-xs">
-        {/* Logo */}
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-blue-500/20">
             <Layers className="w-5 h-5" />
@@ -126,8 +142,16 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
           ))}
         </div>
 
-        {/* User / Notification controls */}
-        <div className="flex items-center gap-4">
+        {/* User & Upload Action Buttons */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowUploadModal(true)}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md shadow-blue-600/20"
+          >
+            <Plus className="w-4 h-4" />
+            Upload Bid PDF
+          </button>
+
           <button className="w-9 h-9 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 border border-slate-200/80 transition-all">
             <Bell className="w-4 h-4" />
           </button>
@@ -150,51 +174,50 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
       {/* MAIN CONTAINER */}
       <main className="max-w-7xl w-full mx-auto px-8 pt-8 space-y-8">
         
-        {/* TOP MULTI-LAYER SAAS DASHBOARD GRID (Structra Inspired Layout) */}
+        {/* TOP MULTI-LAYER SAAS DASHBOARD GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          {/* HERO BANNER CARD (Left Column - 5 Spans) */}
-          <div className="lg:col-span-5 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 rounded-3xl p-8 text-white relative overflow-hidden flex flex-col justify-between shadow-xl shadow-blue-500/10 min-h-[360px]">
+          {/* HERO BANNER CARD WITH CUSTOM 3D ISOMETRIC SVG GRAPHIC */}
+          <div className="lg:col-span-5 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 rounded-3xl p-8 text-white relative overflow-hidden flex flex-col justify-between shadow-xl shadow-blue-500/10 min-h-[380px]">
             
-            {/* Background 3D Building Overlay Accent */}
-            <div className="absolute right-[-20px] bottom-[-20px] opacity-15 pointer-events-none">
-              <Shield className="w-64 h-64 text-white" />
+            {/* EMBEDDED ISOMETRIC 3D SVG ILLUSTRATION */}
+            <div className="absolute right-[-40px] bottom-[-20px] w-72 h-72 opacity-90 pointer-events-none">
+              <IsometricHeroGraphic />
             </div>
 
-            <div>
+            <div className="relative z-10">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-semibold mb-6">
                 <Sparkles className="w-3.5 h-3.5" /> DevNexus Core Engine
               </span>
               <h2 className="text-3xl font-extrabold tracking-tight leading-tight mb-3">
                 Smart Procurement Security
               </h2>
-              <p className="text-blue-100 text-sm font-normal max-w-sm leading-relaxed">
+              <p className="text-blue-100 text-sm font-normal max-w-xs leading-relaxed">
                 Automated cartel detection, pricing anomaly clustering, and layout similarity parsing in government contracts.
               </p>
             </div>
 
-            <div className="pt-6 border-t border-white/20 flex items-center justify-between">
+            <div className="pt-6 border-t border-white/20 flex items-center justify-between relative z-10">
               <div>
                 <span className="block text-xs font-medium text-blue-100">Estimated Public Savings</span>
                 <span className="text-2xl font-black text-white">₹42.85 Crore</span>
               </div>
               
               <button 
-                onClick={() => onSelectTender('tender-2026-001')}
-                className="w-10 h-10 bg-white text-blue-600 rounded-2xl flex items-center justify-center shadow-lg hover:scale-105 transition-all"
+                onClick={() => setShowUploadModal(true)}
+                className="px-4 py-2 bg-white text-blue-600 rounded-2xl text-xs font-bold flex items-center gap-1.5 shadow-lg hover:scale-105 transition-all"
               >
-                <ArrowUpRight className="w-5 h-5" />
+                Scan PDF <ArrowUpRight className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* RIGHT COLUMN GRID (7 Spans) */}
+          {/* RIGHT COLUMN GRID */}
           <div className="lg:col-span-7 flex flex-col gap-6">
             
-            {/* TOP ROW: 2 METRIC CARDS WITH SEMI-CIRCLE ARC METERS */}
+            {/* TOP ROW: 2 METRIC CARDS WITH RADIAL ARC METERS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               
-              {/* Metric Card 1 */}
               <div className="saas-card p-6 flex flex-col justify-between relative overflow-hidden">
                 <div className="flex justify-between items-start mb-4">
                   <span className="text-sm font-bold text-slate-700">DBSCAN Anomaly Index</span>
@@ -211,7 +234,6 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
                     <h3 className="text-4xl font-extrabold text-slate-900">82%</h3>
                   </div>
 
-                  {/* SVG Arc Gauge */}
                   <div className="relative w-24 h-16 flex items-center justify-center">
                     <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 36 36">
                       <path className="text-slate-100" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
@@ -221,7 +243,6 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
                 </div>
               </div>
 
-              {/* Metric Card 2 */}
               <div className="saas-card p-6 flex flex-col justify-between relative overflow-hidden">
                 <div className="flex justify-between items-start mb-4">
                   <span className="text-sm font-bold text-slate-700">Layout Similarity Match</span>
@@ -238,7 +259,6 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
                     <h3 className="text-4xl font-extrabold text-slate-900">71%</h3>
                   </div>
 
-                  {/* SVG Arc Gauge */}
                   <div className="relative w-24 h-16 flex items-center justify-center">
                     <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 36 36">
                       <path className="text-slate-100" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
@@ -279,10 +299,8 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
 
         </div>
 
-        {/* BOTTOM METRICS ROW (Matching Reference UI Footer Row) */}
+        {/* BOTTOM METRICS ROW */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          
-          {/* Card 1 */}
           <div className="saas-card p-6">
             <div className="flex justify-between items-start mb-2">
               <span className="text-sm font-bold text-slate-800">Ground Leveling Risk</span>
@@ -294,7 +312,6 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
             </div>
           </div>
 
-          {/* Card 2 */}
           <div className="saas-card p-6">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Daily Workforce Output</span>
             <div className="flex items-baseline gap-2 mb-2">
@@ -308,7 +325,6 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
             </div>
           </div>
 
-          {/* Card 3 */}
           <div className="saas-card p-6">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Progress Velocity (Weekly)</span>
             <div className="flex items-center justify-between">
@@ -320,12 +336,10 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
               </div>
             </div>
           </div>
-
         </div>
 
         {/* SCANNED TENDERS DATA TABLE */}
         <div className="saas-card overflow-hidden">
-          
           <div className="p-6 border-b border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h3 className="text-base font-bold text-slate-900 m-0">Tender Verification Portal</h3>
@@ -438,6 +452,13 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
         </div>
 
       </main>
+
+      {/* PDF UPLOAD & PARSING MODAL */}
+      <PdfUploadModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onUploadComplete={handleUploadComplete}
+      />
     </div>
   );
 }
