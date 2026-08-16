@@ -38,6 +38,24 @@ export default function ReportGenerator({ tenderId, onBack, user }) {
     );
   }
 
+  if (!tender) {
+    return (
+      <div className="min-h-screen bg-[#f4f5f8] flex items-center justify-center text-slate-500 flex-col gap-4">
+        <AlertTriangle className="w-12 h-12 text-amber-600" />
+        <div className="text-center">
+          <h3 className="text-lg font-bold text-slate-900 mb-2">Tender Not Found</h3>
+          <p className="text-sm text-slate-600 mb-4">Unable to load tender details for ID: {tenderId}</p>
+          <button
+            onClick={onBack}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold transition-all"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#f4f5f8] text-slate-900 print:bg-white">
       
@@ -107,14 +125,14 @@ export default function ReportGenerator({ tenderId, onBack, user }) {
 
           {/* Action Callout Flag */}
           <div className={`p-6 rounded-2xl border mb-8 flex items-start gap-4 ${
-            tender.recommendation === 'HALT_AWARD'
+            (tender.recommendation === 'HALT_AWARD')
               ? 'bg-rose-50 border-rose-200 text-rose-900'
               : 'bg-amber-50 border-amber-200 text-amber-900'
           }`}>
-            <AlertTriangle className={`w-6 h-6 shrink-0 mt-0.5 ${tender.recommendation === 'HALT_AWARD' ? 'text-rose-600' : 'text-amber-600'}`} />
+            <AlertTriangle className={`w-6 h-6 shrink-0 mt-0.5 ${(tender.recommendation === 'HALT_AWARD') ? 'text-rose-600' : 'text-amber-600'}`} />
             <div>
               <h3 className="text-sm font-bold uppercase tracking-wider mb-1">
-                {tender.recommendation === 'HALT_AWARD' ? 'AUDIT DIRECTIVE: HALT L1 AWARD IMMEDIATELY' : 'AUDIT DIRECTIVE: MANDATORY REVIEW REQUIRED'}
+                {(tender.recommendation === 'HALT_AWARD') ? 'AUDIT DIRECTIVE: HALT L1 AWARD IMMEDIATELY' : 'AUDIT DIRECTIVE: MANDATORY REVIEW REQUIRED'}
               </h3>
               <p className="text-xs leading-relaxed opacity-90">
                 This report is compiled automatically by DevNexus Core. DBSCAN anomaly clustering and layout similarity indicators show collusive bidder rings. Do not issue payment or award letters.
@@ -136,11 +154,11 @@ export default function ReportGenerator({ tenderId, onBack, user }) {
             <div>
               <h4 className="font-bold text-slate-400 uppercase tracking-widest text-[9px] mb-2">Calculated Risk Indices</h4>
               <div className="space-y-2">
-                <div><span className="text-slate-500">DBSCAN Price Anomaly:</span> <span className="font-bold text-slate-900">{(tender.engine1_score * 100).toFixed(0)}%</span></div>
-                <div><span className="text-slate-500">Layout-RAG Match Score:</span> <span className="font-bold text-slate-900">{(tender.engine2_score * 100).toFixed(0)}%</span></div>
+                <div><span className="text-slate-500">DBSCAN Price Anomaly:</span> <span className="font-bold text-slate-900">{((tender.engine1_score || 0) * 100).toFixed(0)}%</span></div>
+                <div><span className="text-slate-500">Layout-RAG Match Score:</span> <span className="font-bold text-slate-900">{((tender.engine2_score || 0) * 100).toFixed(0)}%</span></div>
                 <div>
                   <span className="text-slate-700 font-bold">Combined Risk Index:</span> 
-                  <span className="font-extrabold text-rose-600 ml-1">{(tender.anomaly_score * 100).toFixed(0)}% Match</span>
+                  <span className="font-extrabold text-rose-600 ml-1">{((tender.anomaly_score || 0) * 100).toFixed(0)}% Match</span>
                 </div>
               </div>
             </div>
@@ -167,26 +185,42 @@ export default function ReportGenerator({ tenderId, onBack, user }) {
                 DBSCAN price clustering flagged an identical pricing factor of exactly <strong>6.00% markup</strong> across all items in Digital Infra's bid breakdown relative to the L1 bidder (TechNova).
               </p>
               
-              <table className="w-full text-left border-collapse text-[11px]">
-                <thead>
-                  <tr className="border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider bg-slate-50">
-                    <th className="py-2.5 px-3">Item Description</th>
-                    <th className="py-2.5 px-3 text-right">TechNova Solutions (L1)</th>
-                    <th className="py-2.5 px-3 text-right">Digital Infra (L2 Cover)</th>
-                    <th className="py-2.5 px-3 text-right">Spread Margin</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-mono">
-                  {tender.boq.map(item => (
-                    <tr key={item.id}>
-                      <td className="py-2.5 px-3 font-sans">{item.description}</td>
-                      <td className="py-2.5 px-3 text-right">₹{item.breakdown['TechNova Solutions Pvt. Ltd.'].rate.toLocaleString()}</td>
-                      <td className="py-2.5 px-3 text-right">₹{item.breakdown['Digital Infra Systems'].rate.toLocaleString()}</td>
-                      <td className="py-2.5 px-3 text-right text-rose-600 font-bold">+6.00% (Flagged)</td>
+              {tender.boq && tender.boq.length > 0 ? (
+                <table className="w-full text-left border-collapse text-[11px]">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider bg-slate-50">
+                      <th className="py-2.5 px-3">Item Description</th>
+                      <th className="py-2.5 px-3 text-right">TechNova Solutions (L1)</th>
+                      <th className="py-2.5 px-3 text-right">Digital Infra (L2 Cover)</th>
+                      <th className="py-2.5 px-3 text-right">Spread Margin</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-mono">
+                    {tender.boq.map(item => (
+                      <tr key={item.id}>
+                        <td className="py-2.5 px-3 font-sans">{item.description}</td>
+                        <td className="py-2.5 px-3 text-right">
+                          {item.breakdown && item.breakdown['TechNova Solutions Pvt. Ltd.'] 
+                            ? `₹${item.breakdown['TechNova Solutions Pvt. Ltd.'].rate.toLocaleString()}`
+                            : 'N/A'
+                          }
+                        </td>
+                        <td className="py-2.5 px-3 text-right">
+                          {item.breakdown && item.breakdown['Digital Infra Systems']
+                            ? `₹${item.breakdown['Digital Infra Systems'].rate.toLocaleString()}`
+                            : 'N/A'
+                          }
+                        </td>
+                        <td className="py-2.5 px-3 text-right text-rose-600 font-bold">+6.00% (Flagged)</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="bg-slate-50 p-4 border border-slate-200 rounded-2xl text-slate-500 text-center">
+                  No BOQ data available yet.
+                </div>
+              )}
             </div>
 
             <div>
@@ -198,17 +232,23 @@ export default function ReportGenerator({ tenderId, onBack, user }) {
                 The Layout RAG comparisons detected duplicate paragraph strings. The terms & conditions section shares the same text with a font fingerprint matching index of 100%.
               </p>
               
-              <div className="bg-slate-50 p-4 border border-slate-200 rounded-2xl space-y-3">
-                {tender.document_comparison.details.matching_paragraphs.map((p, idx) => (
-                  <div key={idx} className="pb-3 border-b border-slate-200 last:border-b-0">
-                    <div className="font-bold text-slate-900 mb-1">{p.section}</div>
-                    <div className="grid grid-cols-2 gap-4 italic text-slate-600">
-                      <div>"L1: {p.text_a}"</div>
-                      <div>"L2: {p.text_b}"</div>
+              {tender.document_comparison && tender.document_comparison.details && tender.document_comparison.details.matching_paragraphs && tender.document_comparison.details.matching_paragraphs.length > 0 ? (
+                <div className="bg-slate-50 p-4 border border-slate-200 rounded-2xl space-y-3">
+                  {tender.document_comparison.details.matching_paragraphs.map((p, idx) => (
+                    <div key={idx} className="pb-3 border-b border-slate-200 last:border-b-0">
+                      <div className="font-bold text-slate-900 mb-1">{p.section}</div>
+                      <div className="grid grid-cols-2 gap-4 italic text-slate-600 text-[10px]">
+                        <div>"L1: {p.text_a.substring(0, 100)}..."</div>
+                        <div>"L2: {p.text_b.substring(0, 100)}..."</div>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-slate-50 p-4 border border-slate-200 rounded-2xl text-slate-500 text-center">
+                  No document comparison data available yet.
+                </div>
+              )}
             </div>
 
             <div>

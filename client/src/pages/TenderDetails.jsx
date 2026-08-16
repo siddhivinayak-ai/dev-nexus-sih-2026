@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
+import PdfUploadModal from '../components/PdfUploadModal';
 import { 
   ArrowLeft, Shield, CheckCircle2, AlertTriangle, AlertCircle, FileText, 
   MessageSquare, Sparkles, ChevronRight, Eye, RefreshCw, 
-  Search, GitCompare, Share2, CornerDownRight, Database, TrendingUp, Info
+  Search, GitCompare, Share2, CornerDownRight, Database, TrendingUp, Info, Plus
 } from 'lucide-react';
 import { ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, ZAxis, Tooltip, Cell, Legend } from 'recharts';
 
@@ -14,6 +15,7 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
   
   const [selectedHighlightId, setSelectedHighlightId] = useState(null);
   const [pdfActiveDoc, setPdfActiveDoc] = useState('a');
+  const [showAddPdfModal, setShowAddPdfModal] = useState(false);
   const pdfViewerRef = useRef(null);
 
   const [showCopilot, setShowCopilot] = useState(false);
@@ -28,11 +30,28 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
   useEffect(() => {
     async function loadTender() {
       setLoading(true);
-      const res = await api.getTenderDetails(tenderId);
-      setTender(res.data);
-      setLoading(false);
+      try {
+        const res = await api.getTenderDetails(tenderId);
+        let nextTender = res?.data || null;
+
+        if (!nextTender) {
+          const storedTenders = JSON.parse(localStorage.getItem('devnexus_tenders') || '[]');
+          nextTender = storedTenders.find(item => item.tender_id === tenderId) ||
+            JSON.parse(localStorage.getItem('tenders') || '[]').find(item => item.tender_id === tenderId) ||
+            null;
+        }
+
+        setTender(nextTender);
+      } catch (error) {
+        const storedTenders = JSON.parse(localStorage.getItem('devnexus_tenders') || '[]');
+        setTender(storedTenders.find(item => item.tender_id === tenderId) || null);
+      } finally {
+        setLoading(false);
+      }
     }
-    loadTender();
+    if (tenderId) {
+      loadTender();
+    }
   }, [tenderId]);
 
   useEffect(() => {
@@ -174,6 +193,26 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
     );
   }
 
+  if (!tender) {
+    return (
+      <div className="min-h-screen bg-[#f4f5f8] flex items-center justify-center px-6">
+        <div className="max-w-xl w-full bg-white rounded-3xl border border-slate-200 shadow-sm p-8 text-center">
+          <div className="w-16 h-16 rounded-3xl bg-rose-50 border border-rose-200 flex items-center justify-center mx-auto mb-5">
+            <AlertCircle className="w-8 h-8 text-rose-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">No analysis data available</h2>
+          <p className="text-slate-600 mb-6">The tender was saved, but data could not be loaded. Please return to the dashboard and re-upload the tender PDF.</p>
+          <button
+            onClick={onBack}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const scatterPlotData = [
     { name: 'TechNova Solutions', amount: 15.20, timeOffset: 42, type: 'L1 Bidder (Flagged)' },
     { name: 'Digital Infra Systems', amount: 16.11, timeOffset: 43, type: 'L2 Cover Bid (Flagged)' },
@@ -215,6 +254,21 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
         }
       ]
     }
+  };
+
+  const handleAppendFiles = (updatedTender) => {
+    const mergedTender = {
+      ...(tender || {}),
+      ...updatedTender,
+      documents: [...((tender?.documents || [])), ...((updatedTender.documents || []))],
+      tender_id: tender?.tender_id || updatedTender.tender_id
+    };
+
+    setTender(mergedTender);
+    const allStored = JSON.parse(localStorage.getItem('devnexus_tenders') || '[]');
+    const refreshed = [mergedTender, ...allStored.filter(item => item.tender_id !== mergedTender.tender_id)];
+    localStorage.setItem('devnexus_tenders', JSON.stringify(refreshed));
+    setShowAddPdfModal(false);
   };
 
   const handleCitationClick = (highlightId, docType) => {
@@ -290,6 +344,13 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
         {/* Top Actions */}
         <div className="flex items-center gap-3">
           <button
+            onClick={() => setShowAddPdfModal(true)}
+            className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl border border-amber-400 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md shadow-amber-500/20"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add More PDFs
+          </button>
+          <button
             onClick={() => setShowCopilot(true)}
             className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-all"
           >
@@ -305,6 +366,16 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
           </button>
         </div>
       </header>
+
+      {showAddPdfModal && (
+        <PdfUploadModal
+          isOpen={showAddPdfModal}
+          onClose={() => setShowAddPdfModal(false)}
+          existingTender={tender}
+          onAppendFiles={handleAppendFiles}
+          onOpenTenderVerification={() => {}}
+        />
+      )}
 
       {/* Main Workspace Area */}
       <div className="flex-1 flex overflow-hidden relative">
@@ -342,7 +413,7 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
                   <AlertTriangle className="w-5 h-5 text-rose-600 mt-0.5 shrink-0" />
                   <div>
                     <h4 className="text-sm font-bold text-slate-900 mb-1">DevNexus Cartel Recommendation</h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">
+                    <p className="text-sm text-slate-600 leading-relaxed">
                       {tender.recommendation_text}
                     </p>
                   </div>
@@ -354,8 +425,8 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
                 <div className="saas-card p-5 lg:col-span-2">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">DBSCAN Timing & Price Scatter Clusters</h4>
-                      <p className="text-[10px] text-slate-500 mt-0.5">Clustering bids by submission timing vs bid amount (₹ Cr)</p>
+                      <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">DBSCAN Timing & Price Scatter Clusters</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">Clustering bids by submission timing vs bid amount (₹ Cr)</p>
                     </div>
                   </div>
                   
@@ -388,7 +459,7 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
 
                 <div className="saas-card p-5 flex flex-col justify-between">
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-4">Risk Probability Index</h4>
+                    <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Risk Probability Index</h4>
                     
                     <div className="space-y-4">
                       <div>
@@ -412,7 +483,7 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
                       </div>
 
                       <div className="pt-2 border-t border-slate-200">
-                        <div className="flex justify-between text-xs">
+                        <div className="flex justify-between text-sm">
                           <span className="text-slate-800 font-bold">Combined Risk Index</span>
                           <span className="text-rose-600 font-extrabold">{Math.round(tender.anomaly_score * 100)}% Match</span>
                         </div>
@@ -420,7 +491,7 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
                     </div>
                   </div>
 
-                  <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-[10px] text-rose-800 leading-normal flex gap-2">
+                  <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs text-rose-800 leading-normal flex gap-2">
                     <Info className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                     Submissions within 50 seconds. Exact pricing ratios (6.00%) identified across items.
                   </div>
@@ -431,14 +502,14 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
               {/* BOQ High Density Data Table */}
               <div className="saas-card overflow-hidden">
                 <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider m-0">Bill of Quantities (BOQ) - Item Breakdown Grid</h4>
-                  <span className="text-[10px] text-slate-500 font-mono">Hover cells to verify source snippet notes</span>
+                  <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider m-0">Bill of Quantities (BOQ) - Item Breakdown Grid</h4>
+                  <span className="text-xs text-slate-500 font-mono">Hover cells to verify source snippet notes</span>
                 </div>
                 
                 <div className="overflow-x-auto relative">
-                  <table className="w-full border-collapse text-left text-xs">
+                  <table className="w-full border-collapse text-left text-sm">
                     <thead>
-                      <tr className="bg-slate-100/70 border-b border-slate-200 font-bold text-slate-500 text-[10px] uppercase tracking-wider">
+                      <tr className="bg-slate-100/70 border-b border-slate-200 font-bold text-slate-500 text-xs uppercase tracking-wider">
                         <th className="py-3.5 px-4 border-r border-slate-200 w-96">Item Description</th>
                         <th className="py-3.5 px-4 border-r border-slate-200 text-center w-24">QTY</th>
                         {tender.bidders.map(b => (
@@ -453,11 +524,11 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
                       {tender.boq.map(item => (
                         <tr key={item.id} className="hover:bg-slate-50 transition-all">
                           <td className="py-3 px-4 border-r border-slate-200 font-sans">
-                            <span className="font-bold text-slate-900 block">{item.description}</span>
-                            <span className="text-[10px] text-slate-400">Code: BOQ-{item.id}</span>
+                            <span className="font-bold text-slate-900 text-sm block">{item.description}</span>
+                            <span className="text-xs text-slate-400">Code: BOQ-{item.id}</span>
                           </td>
                           
-                          <td className="py-3 px-4 border-r border-slate-200 text-center text-slate-600">
+                          <td className="py-3 px-4 border-r border-slate-200 text-center text-sm text-slate-600">
                             {item.qty} {item.unit}
                           </td>
                           
@@ -474,11 +545,11 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
                                 onMouseEnter={() => setHoveredCell({ itemId: item.id, vendor: b.name, note: bd.note })}
                                 onMouseLeave={() => setHoveredCell(null)}
                               >
-                                <div className="text-slate-900 font-bold">₹{bd.rate.toLocaleString()}</div>
-                                <div className="text-[9.5px] text-slate-500">Tot: ₹{(bd.total/10000000).toFixed(2)} Cr</div>
+                                <div className="text-slate-900 font-bold text-sm">₹{bd.rate.toLocaleString()}</div>
+                                <div className="text-xs text-slate-500">Tot: ₹{(bd.total/10000000).toFixed(2)} Cr</div>
                                 
                                 <div className="mt-1 flex justify-end">
-                                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold ${
+                                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold ${
                                     confidence >= 90
                                       ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                       : 'bg-rose-50 text-rose-700 border border-rose-200 font-extrabold'
@@ -489,11 +560,11 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
 
                                 {hoveredCell?.itemId === item.id && hoveredCell?.vendor === b.name && (
                                   <div className="absolute bottom-full right-4 z-30 w-72 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xl text-left font-sans pointer-events-none">
-                                    <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Source Snippet Verification</h5>
-                                    <div className="text-[11.5px] text-slate-800 leading-snug">
+                                    <h5 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Source Snippet Verification</h5>
+                                    <div className="text-sm text-slate-800 leading-snug">
                                       {hoveredCell.note}
                                     </div>
-                                    <div className="mt-2 text-[9px] text-blue-600 font-bold flex items-center gap-1">
+                                    <div className="mt-2 text-xs text-blue-600 font-bold flex items-center gap-1">
                                       <CornerDownRight className="w-3 h-3" />
                                       DBSCAN Formula Match
                                     </div>
@@ -521,12 +592,12 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
                 <div className="px-5 py-3 border-b border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
                   <div className="flex items-center gap-2">
                     <FileText className="w-4 h-4 text-blue-600" />
-                    <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    <span className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                       {pdfActiveDoc === 'a' ? 'TechNova_Proposal.pdf' : 'DigitalInfra_Proposal.pdf'}
                     </span>
                   </div>
                   
-                  <div className="flex bg-slate-200 p-0.5 rounded-lg text-[10px] font-bold">
+                  <div className="flex bg-slate-200 p-0.5 rounded-lg text-xs font-bold">
                     <button
                       onClick={() => setPdfActiveDoc('a')}
                       className={`px-2.5 py-1 rounded-md transition-all ${
@@ -546,10 +617,10 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 font-mono text-xs leading-relaxed space-y-6 text-slate-800 bg-white" ref={pdfViewerRef}>
+                <div className="flex-1 overflow-y-auto p-6 font-mono text-sm leading-relaxed space-y-6 text-slate-800 bg-white" ref={pdfViewerRef}>
                   {docTextContent[pdfActiveDoc].pages.map(page => (
                     <div key={page.num} className="border-b border-slate-100 pb-6 relative">
-                      <div className="absolute top-0 right-0 text-[9px] text-slate-400 font-mono tracking-widest">
+                      <div className="absolute top-0 right-0 text-xs text-slate-400 font-mono tracking-widest">
                         PAGE {page.num} / {docTextContent[pdfActiveDoc].pages.length}
                       </div>
                       
@@ -659,19 +730,19 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
             <div className="saas-card overflow-hidden flex flex-col">
               <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Side-by-Side Proposal Text Diff</h4>
-                  <p className="text-[10px] text-slate-500">Deleted text in red strikethrough, added text in green highlight</p>
+                  <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Side-by-Side Proposal Text Diff</h4>
+                  <p className="text-xs text-slate-500">Deleted text in red strikethrough, added text in green highlight</p>
                 </div>
                 
-                <div className="flex items-center gap-2 text-[10px] font-medium text-slate-600">
+                <div className="flex items-center gap-2 text-xs font-medium text-slate-600">
                   <span className="inline-block w-3 h-3 bg-red-100 border-l-2 border-l-red-500 rounded-xs" /> Deletions
                   <span className="inline-block w-3 h-3 bg-green-100 border-l-2 border-l-green-500 rounded-xs ml-2" /> Additions
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200 text-xs font-mono p-6 bg-white leading-relaxed">
+              <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200 text-sm font-mono p-6 bg-white leading-relaxed">
                 <div className="space-y-3 pr-0 md:pr-6 pb-6 md:pb-0">
-                  <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">TechNova Solutions (Page 3)</h5>
+                  <h5 className="text-xs font-bold text-slate-400 uppercase tracking-widest">TechNova Solutions (Page 3)</h5>
                   <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 whitespace-pre-line text-slate-800">
                     {`TechNova Solutions Pvt. Ltd. warrants that all goods supplied under this tender will be free from defects in material and workmanship `}
                     <span className="diff-addition">{`for a period of three (3) years from date of commissioning.`}</span>
@@ -682,7 +753,7 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
                 </div>
 
                 <div className="space-y-3 pl-0 md:pl-6 pt-6 md:pt-0">
-                  <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Digital Infra Systems (Page 3)</h5>
+                  <h5 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Digital Infra Systems (Page 3)</h5>
                   <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 whitespace-pre-line text-slate-800">
                     {`Digital Infra Systems warrants that all goods supplied under this tender will be free from defects in material and workmanship `}
                     <span className="diff-deletion">{`for a period of three (3) years from date of commissioning.`}</span>
@@ -701,11 +772,11 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
             <div className="saas-card overflow-hidden flex flex-col">
               <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Collusive Network Topology</h4>
-                  <p className="text-[10px] text-slate-500">Mapping relationships between bidders, shared directors, gateway IPs, and transaction flows</p>
+                  <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Collusive Network Topology</h4>
+                  <p className="text-xs text-slate-500">Mapping relationships between bidders, shared directors, gateway IPs, and transaction flows</p>
                 </div>
                 
-                <div className="flex gap-3 text-[9px] font-mono">
+                <div className="flex gap-3 text-xs font-mono">
                   <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]" /> Bidder</span>
                   <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]" /> Director</span>
                   <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#2563eb]" /> Gateway IP</span>
@@ -731,7 +802,7 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
             <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-blue-600" />
-                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">DevNexus Copilot</h3>
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">DevNexus Copilot</h3>
               </div>
               <button 
                 onClick={() => setShowCopilot(false)}
@@ -744,7 +815,7 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
               {chatMessages.map((msg, idx) => (
                 <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                  <div className={`p-3.5 rounded-2xl text-xs leading-relaxed max-w-[85%] ${
+                  <div className={`p-3.5 rounded-2xl text-sm leading-relaxed max-w-[85%] ${
                     msg.role === 'user'
                       ? 'bg-blue-600 text-white rounded-tr-none shadow-sm'
                       : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none shadow-xs'
@@ -755,7 +826,7 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
                       <div className="mt-2.5 pt-2 border-t border-slate-200 flex items-center">
                         <button
                           onClick={() => handleCitationClick(msg.citation.id, msg.citation.docType)}
-                          className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-100 border border-slate-200 rounded text-[9px] text-blue-600 font-bold hover:bg-blue-50 transition-all"
+                          className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-100 border border-slate-200 rounded text-xs text-blue-600 font-bold hover:bg-blue-50 transition-all"
                         >
                           <FileText className="w-3 h-3" />
                           Citation: {msg.citation.label}
@@ -773,7 +844,7 @@ export default function TenderDetails({ tenderId, onBack, onOpenReport, user }) 
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 placeholder="Ask copilot about PDF compliance..."
-                className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 text-xs text-slate-900 rounded-xl focus:border-blue-600 focus:bg-white outline-none transition-all"
+                className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 text-sm text-slate-900 rounded-xl focus:border-blue-600 focus:bg-white outline-none transition-all"
               />
               <button
                 type="submit"

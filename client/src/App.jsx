@@ -4,11 +4,14 @@ import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import TenderDetails from './pages/TenderDetails';
 import ReportGenerator from './pages/ReportGenerator';
+import Profile from './pages/Profile';
+import TenderVerification from './pages/TenderVerification';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [activePage, setActivePage] = useState('landing');
   const [selectedTenderId, setSelectedTenderId] = useState(null);
+  const [pendingTenderData, setPendingTenderData] = useState(null);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('devnexus_user');
@@ -49,6 +52,33 @@ export default function App() {
     setActivePage('tender_details');
   };
 
+  const handleOpenProfile = () => {
+    setActivePage('profile');
+  };
+
+  const handleBackFromProfile = () => {
+    setActivePage('dashboard');
+  };
+
+  const handleOpenTenderVerification = (tenderData) => {
+    setPendingTenderData(tenderData);
+    setActivePage('tender_verification');
+  };
+
+  const handleSaveTenderVerification = (verifiedTenderData) => {
+    if (verifiedTenderData) {
+      const existing = JSON.parse(localStorage.getItem('devnexus_tenders') || '[]');
+      const updated = [verifiedTenderData, ...existing.filter(item => item.tender_id !== verifiedTenderData.tender_id)];
+      localStorage.setItem('devnexus_tenders', JSON.stringify(updated));
+    }
+    setPendingTenderData(null);
+  };
+
+  const handleOpenTenderDetailsFromVerification = (tenderId) => {
+    setSelectedTenderId(tenderId);
+    setActivePage('tender_details');
+  };
+
   switch (activePage) {
     case 'landing':
       return <Landing onLoginSuccess={handleLoginSuccess} />;
@@ -57,7 +87,9 @@ export default function App() {
       return (
         <Dashboard 
           user={currentUser} 
-          onSelectTender={handleSelectTender} 
+          onSelectTender={handleSelectTender}
+          onOpenProfile={handleOpenProfile}
+          onOpenTenderVerification={handleOpenTenderVerification}
           onLogout={handleLogout} 
         />
       );
@@ -78,6 +110,25 @@ export default function App() {
           tenderId={selectedTenderId} 
           onBack={handleGoBackToTender}
           user={currentUser}
+        />
+      );
+    
+    case 'profile':
+      return (
+        <Profile
+          user={currentUser}
+          onBack={handleBackFromProfile}
+          onLogout={handleLogout}
+        />
+      );
+    
+    case 'tender_verification':
+      return (
+        <TenderVerification
+          tenderData={pendingTenderData}
+          onSave={handleSaveTenderVerification}
+          onBack={handleGoBackToDashboard}
+          onOpenTenderDetails={handleOpenTenderDetailsFromVerification}
         />
       );
     
