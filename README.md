@@ -169,14 +169,15 @@ SIH2026/
 
 > *Current Project Progress: **~78% Complete** (Production-ready document intelligence, functional behavioral engine prototypes, interactive dashboard, and integrated test harness).*
 
-| # | Member | Primary Role | Domain Responsibilities | Status & Completion % | Feature Branch |
+| # | Member | Primary Role | Domain Responsibilities | Status & Status | Feature Branch |
 |---|---|---|---|:---:|---|
-| 1 | **Siddhivinayak Waghmode** | Full-Stack Lead & Document AI Lead | • Full repo setup, API design & core backend architecture<br>• Engine 2 Layout-Aware RAG (PDF parser, font extractor, table analyzer)<br>• Pairwise similarity pipeline & automated test harness<br>• Frontend integration & interactive dashboard workflows | `88%` 🟢 | `siddhivinayak-feature` |
-| 2 | **Prathamesh** | ML Engineer (Behavioral Analytics) | • DBSCAN density clustering for bid data<br>• Price-gap anomaly models & boundary tuning<br>• PyTorch confidence classification scoring | `65%` 🟡 | `prathamesh-feature` |
-| 3 | **Mansi** | Data & Graph Analytics | • Cross-tender vendor relationship graph analysis<br>• Rotational win cycle & territorial allocation detection<br>• Synthetic procurement data generation & benchmarking | `60%` 🟡 | `mansi-feature` |
-| 4 | **Lakshey** | Frontend & UI/UX Specialist | • Interactive charts, heatmaps & visual comparison UI<br>• PDF side-by-side diffing components<br>• Presentation deck, system pitch & UX polish | `70%` 🟡 | `lakshey-feature` |
-| 5 | **Joel** | Backend & Systems Engineer | • FastAPI database persistence layer (PostgreSQL/SQLAlchemy)<br>• Authentication, token management & role-based access<br>• Dockerization, CI/CD pipelines & production deployment | `60%` 🟡 | `member5-feature` |
-| 6 | **Kunal** | QA, Domain & Legal Research | • CCI regulatory compliance standards & audit format validation<br>• Edge-case test scenario authoring & stress testing<br>• Project documentation & verification reports | `65%` 🟡 | `member6-feature` |
+
+| 1 | **Prathamesh** | ML Engineer (Behavioral Analytics) | • DBSCAN density clustering for bid data<br>• Price-gap anomaly models & boundary tuning<br>• PyTorch confidence classification scoring | "Working" | `prathamesh-feature` |
+| 2 | **Mansi** | Data & Graph Analytics | • Cross-tender vendor relationship graph analysis<br>• Rotational win cycle & territorial allocation detection<br>• Synthetic procurement data generation & benchmarking |"Working"| `mansi-feature` |
+| 3 | **Lakshey** | Frontend & UI/UX Specialist | • Interactive charts, heatmaps & visual comparison UI<br>• PDF side-by-side diffing components<br>• Presentation deck, system pitch & UX polish |"Working" | `lakshey-feature` |
+| 4 | **Siddhivinayak Waghmode** | Full-Stack Lead & Document AI Lead | • Full repo setup, API design & core backend architecture<br>• Engine 2 Layout-Aware RAG (PDF parser, font extractor, table analyzer)<br>• Pairwise similarity pipeline & automated test harness<br>• Frontend integration & interactive dashboard workflows | "Working" | `siddhivinayak-feature` |
+| 5 | **Joel** | Backend & Systems Engineer | • FastAPI database persistence layer (PostgreSQL/SQLAlchemy)<br>• Authentication, token management & role-based access<br>• Dockerization, CI/CD pipelines & production deployment | "Working"  | `member5-feature` |
+| 6 | **Kunal** | QA, Domain & Legal Research | • CCI regulatory compliance standards & audit format validation<br>• Edge-case test scenario authoring & stress testing<br>• Project documentation & verification reports | "Working" | `member6-feature` |
 
 ---
 
