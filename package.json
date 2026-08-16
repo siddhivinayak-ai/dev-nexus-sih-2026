@@ -1,0 +1,39 @@
+{
+  "name": "dev-nexus-sih-2026",
+  "version": "1.0.0",
+  "description": "<div align=\"center\">",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/siddhivinayak-ai/dev-nexus-sih-2026.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/siddhivinayak-ai/dev-nexus-sih-2026/issues"
+  },
+  "homepage": "https://github.com/siddhivinayak-ai/dev-nexus-sih-2026#readme",
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "axios": "^1.19.0",
+    "react-pdf": "^10.4.1",
+    "react-router-dom": "^7.18.2",
+    "reactflow": "^11.11.4",
+    "recharts": "^3.10.1",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.5",
+    "vite": "^8.2.1"
+  }
+}

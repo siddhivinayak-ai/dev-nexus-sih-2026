@@ -5,7 +5,7 @@ import {
   Sparkles, AlertCircle, FileText, CheckCircle2, Bell, User, ArrowUpRight, 
   Layers, ChevronRight, Activity, Filter, Upload, Plus
 } from 'lucide-react';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, AreaChart, Area } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, AreaChart, Area, Cell } from 'recharts';
 import IsometricHeroGraphic from '../components/IsometricHeroGraphic';
 import PdfUploadModal from '../components/PdfUploadModal';
 
@@ -26,7 +26,13 @@ const categoryBreakdownData = [
   { category: 'Renewable Energy', count: 6, risk: 24 }
 ];
 
-export default function Dashboard({ onSelectTender, onLogout, user }) {
+const getRiskColor = (risk) => {
+  if (risk >= 70) return '#ef4444'; // Red for high risk
+  if (risk >= 30) return '#f97316'; // Orange for moderate risk
+  return '#22c55e'; // Green for safe
+};
+
+export default function Dashboard({ onSelectTender, onLogout, user, onOpenProfile, onOpenTenderVerification }) {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,7 +49,7 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
       const res = await api.getDashboardStats();
       setStats(res.data);
       
-      const tendersList = [
+      const defaultTenders = [
         {
           tender_id: 'tender-2026-001',
           title: 'Supply of 5,000 Desktop Computers to Public Institutions',
@@ -90,14 +96,30 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
           publish_date: '2026-06-28'
         }
       ];
-      setAllTenders(tendersList);
+
+      const savedTenders = JSON.parse(localStorage.getItem('devnexus_tenders') || '[]');
+      const mergedTenders = [...savedTenders, ...defaultTenders];
+      const uniqueTenders = mergedTenders.filter((tender, index, self) =>
+        index === self.findIndex(entry => entry.tender_id === tender.tender_id)
+      );
+
+      setAllTenders(uniqueTenders);
       setLoading(false);
     }
     loadStats();
   }, []);
 
   const handleUploadComplete = (newTender) => {
-    setAllTenders(prev => [newTender, ...prev]);
+    const nextTender = Array.isArray(newTender) ? newTender : [newTender];
+    const storedTenders = JSON.parse(localStorage.getItem('devnexus_tenders') || '[]');
+    const merged = [...nextTender, ...storedTenders];
+    localStorage.setItem('devnexus_tenders', JSON.stringify(merged));
+    setAllTenders(prev => {
+      const unique = [...merged, ...prev].filter((tender, index, self) =>
+        index === self.findIndex(entry => entry.tender_id === tender.tender_id)
+      );
+      return unique;
+    });
     if (stats) {
       setStats(prev => ({
         ...prev,
@@ -156,18 +178,22 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
             <Bell className="w-4 h-4" />
           </button>
           
-          <div className="flex items-center gap-3 pl-2 border-l border-slate-200">
-            <div className="w-9 h-9 bg-gradient-to-tr from-amber-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm">
-              S
+          <button 
+            onClick={onOpenProfile}
+            className="flex items-center gap-3 pl-2 border-l border-slate-200 hover:opacity-75 transition-opacity cursor-pointer group"
+          >
+            <div className="w-9 h-9 bg-gradient-to-tr from-amber-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm group-hover:shadow-md transition-shadow">
+              {user?.name?.charAt(0) || 'S'}
             </div>
             <div className="hidden sm:block text-left">
-              <span className="block text-xs font-bold text-slate-900 leading-tight">{user?.name || 'Siddhivinayak W.'}</span>
+              <span className="block text-xs font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">{user?.name || 'Siddhivinayak W.'}</span>
               <span className="block text-[10px] text-slate-500 font-medium">CCI Auditor</span>
             </div>
-            <button onClick={onLogout} className="text-xs text-slate-400 hover:text-slate-700 ml-1">
-              Logout
-            </button>
-          </div>
+          </button>
+
+          <button onClick={onLogout} className="text-xs text-slate-400 hover:text-slate-700 ml-3 font-medium">
+            Logout
+          </button>
         </div>
       </header>
 
@@ -278,8 +304,9 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
                   <span className="text-xs text-slate-500 font-medium">Scanned items by department</span>
                 </div>
                 <div className="flex items-center gap-4 text-xs font-semibold">
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-blue-500" /> High Risk</span>
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-orange-500" /> Moderate Risk</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-red-500" /> High Risk (≥70)</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-orange-500" /> Moderate (30-69)</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-green-500" /> Safe (&lt;30)</span>
                 </div>
               </div>
 
@@ -289,7 +316,11 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
                     <XAxis dataKey="category" stroke="#94a3b8" fontSize={11} tickLine={false} />
                     <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
                     <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', borderColor: '#e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} />
-                    <Bar dataKey="risk" fill="#3b82f6" radius={[6, 6, 0, 0]} name="Anomaly %" />
+                    <Bar dataKey="risk" radius={[6, 6, 0, 0]} name="Anomaly %">
+                      {categoryBreakdownData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={getRiskColor(entry.risk)} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -379,7 +410,7 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200/80 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50">
+                <tr className="border-b border-slate-200/80 text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-50">
                   <th className="py-4 px-6">Tender Title</th>
                   <th className="py-4 px-4">Authority</th>
                   <th className="py-4 px-4">Estimated Value</th>
@@ -395,22 +426,22 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
                   return (
                     <tr key={t.tender_id} className="hover:bg-slate-50/80 transition-all">
                       <td className="py-4 px-6">
-                        <p className="font-bold text-slate-900 text-xs hover:text-blue-600 cursor-pointer" onClick={() => onSelectTender(t.tender_id)}>
+                        <p className="font-bold text-slate-900 text-sm hover:text-blue-600 cursor-pointer" onClick={() => onSelectTender(t.tender_id)}>
                           {t.title}
                         </p>
-                        <span className="text-[10px] text-slate-400 font-mono mt-0.5 block">ID: {t.tender_id}</span>
+                        <span className="text-xs text-slate-400 font-mono mt-0.5 block">ID: {t.tender_id}</span>
                       </td>
                       
-                      <td className="py-4 px-4 text-xs text-slate-600 font-medium">
+                      <td className="py-4 px-4 text-sm text-slate-600 font-medium">
                         {t.department}
                       </td>
                       
-                      <td className="py-4 px-4 text-xs font-semibold text-slate-900">
+                      <td className="py-4 px-4 text-sm font-semibold text-slate-900">
                         {formatRupee(t.value)}
                       </td>
                       
                       <td className="py-4 px-4 text-center">
-                        <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-extrabold ${
+                        <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-full text-sm font-extrabold ${
                           score >= 80 
                             ? 'bg-rose-50 text-rose-700 border border-rose-200' 
                             : score >= 50 
@@ -422,7 +453,7 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
                       </td>
                       
                       <td className="py-4 px-4">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border ${
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${
                           t.status === 'FLAGGED_CCI'
                             ? 'bg-rose-50 border-rose-200 text-rose-700'
                             : t.status === 'UNDER_INVESTIGATION'
@@ -458,6 +489,7 @@ export default function Dashboard({ onSelectTender, onLogout, user }) {
         isOpen={showUploadModal}
         onClose={() => setShowUploadModal(false)}
         onUploadComplete={handleUploadComplete}
+        onOpenTenderVerification={onOpenTenderVerification}
       />
     </div>
   );

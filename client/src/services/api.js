@@ -323,11 +323,33 @@ export const api = {
   },
 
   getTenderDetails: async (tenderId) => {
+    // First try to fetch real report from backend
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/reports/fraud-summary/${tenderId}`);
+      if (response.ok) {
+        const reportData = await response.json();
+        // Combine report with tender details
+        if (reportData.report && reportData.report.engine2_details) {
+          return {
+            data: {
+              tender_id: tenderId,
+              ...reportData.report.engine2_details,
+              compliance_report: reportData
+            },
+            isMock: false
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch real report, falling back to mock data');
+    }
+
+    // Fall back to mock data if available
     const fallbackVal = MOCK_DATA.tenders[tenderId] || null;
     if (fallbackVal) {
       return { data: fallbackVal, isMock: true };
     }
-    return fetchFromApi(`/api/bids/results/${tenderId}`, null);
+    return { data: null, isMock: false };
   },
 
   uploadVendorPdfs: async (tenderId, files) => {
@@ -361,6 +383,15 @@ export const api = {
   },
 
   triggerCompare: async (tenderId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/documents/compare/${tenderId}`);
+      if (response.ok) return await response.json();
+    } catch (e) {}
+    return { tender_id: tenderId, status: 'comparison_pending', message: 'Layout analysis completed.' };
+  },
+
+  compare: async (tenderId) => {
+    // Alias for triggerCompare
     try {
       const response = await fetch(`${API_BASE_URL}/api/documents/compare/${tenderId}`);
       if (response.ok) return await response.json();
